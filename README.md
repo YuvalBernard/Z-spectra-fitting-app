@@ -1,5 +1,6 @@
 # Z-spectra-fitting-app
 Python application for the fitting of Z-spectra.
+![GUI-1](./pictures/GUI-1.png) ![GUI-2](./pictures/GUI-2.png) ![GUI-3](./pictures/GUI-3.png)
 
 ## Table of Contents
 * [Intended Audience](#intended-audience)
