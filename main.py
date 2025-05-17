@@ -436,7 +436,7 @@ class SolverGroup(QGroupBox):
         solver_list.currentIndexChanged.connect(self.validateSolver)
 
         fitter_list = QComboBox()
-        fitter_list.addItems(["Bayesian, MCMC", "Bayesian, ADVI", "Nonlinear Least Squares"])
+        fitter_list.addItems(["Bayesian, MCMC", "Bayesian, SVI", "Nonlinear Least Squares"])
         self.parent.registerField("fitting_method", fitter_list, "currentText", QComboBox.currentTextChanged)
 
         selection_layout = QFormLayout()
@@ -469,7 +469,7 @@ class SolverGroup(QGroupBox):
         bayesian_mcmc_layout.addRow("Number of chains", chains_entry)
         config_page.addWidget(bayesian_mcmc_container)
 
-        # Configure ADVI widget
+        # Configure SVI widget
         bayesian_vi_container = QWidget()
         bayesian_vi_layout = QFormLayout(bayesian_vi_container)
         bayesian_vi_layout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.FieldsStayAtSizeHint)
@@ -767,7 +767,7 @@ class ResultPage(QWizardPage):
                     num_samples,
                     num_chains,
                 )
-            case "Bayesian, ADVI":  # "Bayesian, ADVI"
+            case "Bayesian, SVI":  # "Bayesian, SVI"
                 fitting_method = bayesian_vi
                 optimizer_step_size = float(step_size) if (step_size := self.field("optimizer_stepsize")) else None
                 optimizer_num_steps = int(n_steps) if (n_steps := self.field("optimizer_num_steps")) else None
@@ -846,7 +846,7 @@ class ResultPage(QWizardPage):
                         "Effective sample size too low.\nIncrease number of samples.",
                     )
 
-            case "Bayesian, ADVI":  # ADVI
+            case "Bayesian, SVI":  # SVI
                 posterior_samples = result["fit"]
                 self.svi_losses = result["loss"]
                 self.idata = az.from_dict(posterior_samples)
@@ -927,7 +927,7 @@ class ResultPage(QWizardPage):
         folderPath = QFileDialog.getExistingDirectory(self, "Select Folder")
         if not folderPath:
             return
-        # fitting_methods = ["Bayesian-MCMC", "Bayesian-ADVI", "Least-Squares"]
+        # fitting_methods = ["Bayesian-MCMC", "Bayesian-SVI", "Least-Squares"]
         # solvers = ["Symbolic", "Analytical", "Numerical"]
         # saveDir = os.path.join(folderPath, fitting_methods[self.field("fitting_method")], solvers[self.field("solver")])
         saveDir = os.path.join(folderPath, Path(self.wizard().filename).stem)
@@ -1024,7 +1024,7 @@ class ResultPage(QWizardPage):
                             round_to=4,
                         )
                         file.write(fit_diagnostics.to_string())
-                case "Bayesian, ADVI":  # ADVI
+                case "Bayesian, SVI":  # SVI
                     posterior_samples = self.fit_result["fit"]
                     self.best_fit_pars_mean = np.asarray(
                         [

@@ -85,32 +85,6 @@ def least_squares(
         case "Differential Evolution":
             fit = fitter.minimize(method="differential_evolution")
 
-    def sse(pars, args=model_args, data=data, method=method_jitted):
-        offsets, powers, B0, gamma, tp = args
-        fit_pars = jnp.array([
-            pars["R1a"],
-            pars["R2a"],
-            pars["dwa"],
-            pars["R1b"],
-            pars["R2b"],
-            pars["kb"],
-            pars["fb"],
-            pars["dwb"]
-        ])
-        return jnp.sum(jnp.square(data - method(fit_pars, offsets, powers, B0, gamma, tp)))
-
-    hess = jax.hessian(sse)(fit.params.valuesdict())
-    std_err = np.sqrt(fit.redchi * np.array([hess[i][i] for i in ["R1a", "R2a", "dwa", "R1b", "R2b", "kb", "fb",
-                                                                  "dwb"]]))
-    import pprint
-    pp = pprint.PrettyPrinter(depth=4)
-    pp.pprint(hess)
-    pcov_auto = fit.covar
-    std_err_auto = np.sqrt(np.diag(pcov_auto))
-    for i, name in enumerate(fit.var_names):
-        print(f"{name}: manual: {std_err[i]:.4g}, auto: {std_err_auto[i]:.4g}")
-    # print(f"Condition number: {np.linalg.cond(pcov_manual):.4g}")
-
     return {"fit": fit.params}
 
 

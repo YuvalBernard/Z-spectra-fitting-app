@@ -82,8 +82,8 @@ All of the fields above may be updated procedurally by loading a predefined conf
     * Numerical for the solution via matrix exponentiation, without approximations.
 5. Choose a fitting method:
     * Bayesian, Markov chain Monte Carlo (MCMC) --- via the NUTS algorithm
-    * Bayesian, ADVI -- Stochastica Variational Inference
-    * NLS --- Nonlinear least squares --- Levenberg–Marquardt algorithm
+    * Bayesian, SVI -- Stochastica Variational Inference
+    * NLS --- Nonlinear least squares --- Levenberg–Marquardt algorithm (default) or others of choice, described on the [lmfit](https://lmfit.github.io/lmfit-py/fitting.html) page
 6. Each fitting method has a default configuration. You may change the parameters to your liking. Refer to [Numpyro documentation](https://num.pyro.ai/en/stable/) for additional information.
 7. Once the fitting procedure is finished, you may save the results in a directory of choice. Depending on the fitting method, you may find:
     * Bayesian, MCMC
@@ -92,7 +92,7 @@ All of the fields above may be updated procedurally by loading a predefined conf
         * A text file containing summary statistics
         * A pair plot, describing relationships among fitting parameters
         * Effective-sample-size plot for each fitting parameter. This is a measure of the quality of the posterior samples obtained via NUTS. Refer to [Arviz](https://python.arviz.org/en/stable/api/generated/arviz.ess.html) for more information
-    * Bayesian, ADVI
+    * Bayesian, SVI
         * Plot of the best-fit Z-spectra
         * Excel file containing the original dataset, as well as the best-fit spectra via the posterior mean, median and mode
         * A text file containing summary statistics
