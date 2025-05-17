@@ -71,15 +71,18 @@ To run the application, ensure that the virtual environment is activated, and ty
 This should open the GUI.
 1. Select the data file and click next.
 2. Fill in the experimental constants: static field strength, gyromagnetic ratio, saturation duration and saturation amplitude (as a comma separated list if fitting multi-$`B_1`$ Z-spectra.
-3. Configure variables for fitting: to set a parameter as a constant, change its state from `Vary` to `Fixed`.
+
+You may also fill in the power levels automatically by clicking the designated button.
+3. Configure variables for fitting: to set a parameter as a constant, change its state from `Vary` to `Static`.
 Otherwise, for each fitting variable set the minimal and maximal values and an initial guess.
+All of the fields above may be updated procedurally by loading a predefined configuration file in `toml` format. See the example file in the repository for details.
 4. Choose a solver:
     * Symbolic (default) for the solution presented in the paper
     * Analytical for the solution by [Zaiss and Bachert](https://analyticalsciencejournals.onlinelibrary.wiley.com/doi/10.1002/nbm.2887)
     * Numerical for the solution via matrix exponentiation, without approximations.
 5. Choose a fitting method:
     * Bayesian, Markov chain Monte Carlo (MCMC) --- via the NUTS algorithm
-    * Bayesian, SVI -- Stochastica Variational Inference
+    * Bayesian, ADVI -- Stochastica Variational Inference
     * NLS --- Nonlinear least squares --- Levenberg–Marquardt algorithm
 6. Each fitting method has a default configuration. You may change the parameters to your liking. Refer to [Numpyro documentation](https://num.pyro.ai/en/stable/) for additional information.
 7. Once the fitting procedure is finished, you may save the results in a directory of choice. Depending on the fitting method, you may find:
@@ -89,7 +92,7 @@ Otherwise, for each fitting variable set the minimal and maximal values and an i
         * A text file containing summary statistics
         * A pair plot, describing relationships among fitting parameters
         * Effective-sample-size plot for each fitting parameter. This is a measure of the quality of the posterior samples obtained via NUTS. Refer to [Arviz](https://python.arviz.org/en/stable/api/generated/arviz.ess.html) for more information
-    * Bayesian, SVI
+    * Bayesian, ADVI
         * Plot of the best-fit Z-spectra
         * Excel file containing the original dataset, as well as the best-fit spectra via the posterior mean, median and mode
         * A text file containing summary statistics
