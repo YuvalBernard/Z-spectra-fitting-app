@@ -1,6 +1,5 @@
 # Z-spectra-fitting-app
 Python application for the fitting of Z-spectra.
-![GUI-1](./pictures/GUI-1.png) ![GUI-2](./pictures/GUI-2.png) ![GUI-3](./pictures/GUI-3.png)
 
 ## Table of Contents
 * [Intended Audience](#intended-audience)
@@ -8,6 +7,7 @@ Python application for the fitting of Z-spectra.
 * [Setup](#setup)
 * [Usage](#usage)
 * [Contributing and contact info](#contributing-and-contact-info)
+* [How does it look?](#how-does-it-look?)
 
 
 ## Intended Audience
@@ -72,7 +72,6 @@ To run the application, ensure that the virtual environment is activated, and ty
 This should open the GUI.
 1. Select the data file and click next.
 2. Fill in the experimental constants: static field strength, gyromagnetic ratio, saturation duration and saturation amplitude (as a comma separated list if fitting multi-$`B_1`$ Z-spectra.
-
 You may also fill in the power levels automatically by clicking the designated button.
 3. Configure variables for fitting: to set a parameter as a constant, change its state from `Vary` to `Static`.
 Otherwise, for each fitting variable set the minimal and maximal values and an initial guess.
@@ -112,3 +111,6 @@ However, you may freely make changes to the software and redistribute it. Please
 
 We are open to suggestions for improving the software! Please contact [yuval.bernard@weizmann.ac.il].
 You may also open a bug report or a feature request via Github.
+
+## How does it look?
+![GUI-1](./pictures/GUI-1.png) ![GUI-2](./pictures/GUI-2.png) ![GUI-3](./pictures/GUI-3.png)
