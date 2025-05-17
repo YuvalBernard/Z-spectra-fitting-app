@@ -6,8 +6,8 @@ Python application for the fitting of Z-spectra.
 * [Features](#features)
 * [Setup](#setup)
 * [Usage](#usage)
-* [Contributing and contact info](#contributing-and-contact-info)
-* [How does it look?](#how-does-it-look?)
+* [Contributing and Contact Info](#contributing-and-contact-info)
+* [Examaple Illustrations](#example-illustrations)
 
 
 ## Intended Audience
@@ -105,12 +105,12 @@ All of the fields above may be updated procedurally by loading a predefined conf
     See the `APT_phantom` folder for examples.
 We strongly encourage using the Bayesian MCMC fitting method using the Symbolic solver.
 
-## Contributing and contact info
+## Contributing and Contact Info
 This package is proprety of the [Leskes group](https://www.weizmann.ac.il/MCMS/Leskes/home) at the Weizmann Institude of Science.
 However, you may freely make changes to the software and redistribute it. Please cite our paper while doing so!
 
 We are open to suggestions for improving the software! Please contact [yuval.bernard@weizmann.ac.il].
 You may also open a bug report or a feature request via Github.
 
-## How does it look?
+## Example Illustrations
 ![GUI-1](./pictures/GUI-1.png) ![GUI-2](./pictures/GUI-2.png) ![GUI-3](./pictures/GUI-3.png)
