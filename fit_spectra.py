@@ -1,0 +1,241 @@
+"""
+Module comprising different methods to fit Z-spectra (multi-B1),
+MUST Given one of the following methods of solving Bloch-McConell equations:
+    - Analytical solution by Moritz Zaiss
+    - Numerical solution
+    - Symbolic solution
+Includes:
+    - Nonlinear least squares (Levenberg-Marquardt)
+    - Bayesian, Markov Chain Monte Carlo (NUTS sampler)
+    - Bayesian, Stochastic Variational Inference (MultiVariate Normal guide)
+
+Optional fitting parameters (any can be static):
+    - R1a
+    - R2a
+    - R1b
+    - R2b
+    - k
+    - f
+    - dwa
+    - dwb
+Other parameters:
+    - offsets
+    - powers
+    - B0
+    - gamma
+    - tp
+"""
+
+from typing import Callable
+
+import jax
+import jax.numpy as jnp
+import jax.random
+import lmfit
+import numpy as np
+import numpyro
+import numpyro.distributions as dist
+from numpyro.infer.util import init_to_value
+
+jax.config.update("jax_enable_x64", True)
+jax.config.update("jax_platform_name", "cpu")
+numpyro.set_host_device_count(8)
+
+from simulate_spectra import (
+    batch_gen_spectrum_analytical,
+    batch_gen_spectrum_numerical,
+    batch_gen_spectrum_symbolic,
+)
+
+
+def least_squares(
+    model_parameters: lmfit.Parameters,
+    model_args: tuple,
+    data: jax.Array | np.typing.ArrayLike,
+    method: Callable,
+    algorithm: str,
+):
+    """
+    Fit data to Bloch-McConnell equations, with option to pick method of solving the equations.
+    Solver is Levenberg-Marquardt; basically interface for lmfit.
+    Returns best-fit as Parameters class (See https://lmfit.github.io/lmfit-py/ for more info.)
+    """
+    if method not in [
+        batch_gen_spectrum_numerical,
+        batch_gen_spectrum_symbolic,
+        batch_gen_spectrum_analytical,
+    ]:
+        raise NameError("Please insert a valid method of solving Bloch-McConnell equations from the list.")
+    method_jitted = jax.jit(method)
+
+    def objective(model_parameters, args, data, method) -> jax.Array:
+        offsets, powers, B0, gamma, tp = args
+        fit_pars = jnp.array(list(model_parameters.valuesdict().values()))
+        resid = data - method(fit_pars, offsets, powers, B0, gamma, tp)
+        return resid.flatten()
+
+    fitter = lmfit.Minimizer(userfcn=objective, params=model_parameters, fcn_args=(model_args, data, method_jitted))
+    match algorithm:
+        case "Levenberg-Marquardt":
+            fit = fitter.minimize(method="leastsq")
+        case "Trust Region Reflective":
+            fit = fitter.minimize(method="least_squares")
+        case "Basin-Hopping":
+            fit = fitter.minimize(method="basinhopping")
+        case "Differential Evolution":
+            fit = fitter.minimize(method="differential_evolution")
+
+    def sse(pars, args=model_args, data=data, method=method_jitted):
+        offsets, powers, B0, gamma, tp = args
+        fit_pars = jnp.array([
+            pars["R1a"],
+            pars["R2a"],
+            pars["dwa"],
+            pars["R1b"],
+            pars["R2b"],
+            pars["kb"],
+            pars["fb"],
+            pars["dwb"]
+        ])
+        return jnp.sum(jnp.square(data - method(fit_pars, offsets, powers, B0, gamma, tp)))
+
+    hess = jax.hessian(sse)(fit.params.valuesdict())
+    std_err = np.sqrt(fit.redchi * np.array([hess[i][i] for i in ["R1a", "R2a", "dwa", "R1b", "R2b", "kb", "fb",
+                                                                  "dwb"]]))
+    import pprint
+    pp = pprint.PrettyPrinter(depth=4)
+    pp.pprint(hess)
+    pcov_auto = fit.covar
+    std_err_auto = np.sqrt(np.diag(pcov_auto))
+    for i, name in enumerate(fit.var_names):
+        print(f"{name}: manual: {std_err[i]:.4g}, auto: {std_err_auto[i]:.4g}")
+    # print(f"Condition number: {np.linalg.cond(pcov_manual):.4g}")
+
+    return {"fit": fit.params}
+
+
+def bayesian_mcmc(
+    model_parameters: lmfit.Parameters,
+    model_args: tuple,
+    data: jax.Array | np.ndarray,
+    method: Callable,
+    num_warmup: int | None = 1000,
+    num_samples: int | None = 2000,
+    num_chains: int | None = 4,
+):
+    """
+    Fit data to Bloch-McConnell equations, with option to pick method of solving the equations.
+    Use a Bayesian scheme and the NUTS sampler for MCMC; basically interface for numpyro.
+    Returns
+        - posterior samples in arviz `idata' format
+        - summary statistics
+    """
+    num_warmup = num_warmup if num_warmup is not None else 1000
+    num_samples = num_samples if num_samples is not None else 2000
+    num_chains = num_chains if num_chains is not None else 4
+
+    # set priors for model parameters if they are set to vary.
+    # Each parameter gets a Normal distribution centered about (min, max),
+    # such that the distance between the mean and (min, max) is 3*sigma.
+    for par in list(model_parameters.keys()):
+        if model_parameters[par].vary:
+            model_parameters[par].prior = dist.TruncatedNormal(
+                (model_parameters[par].min + model_parameters[par].max) / 2,
+                (model_parameters[par].max - model_parameters[par].min) / 6,
+                low=model_parameters[par].min,
+                high=model_parameters[par].max,
+            )
+            # if par in ["dwa", "dwb"]:
+            #     model_parameters[par].prior = dist.Uniform(model_parameters[par].min, model_parameters[par].max)
+            # elif par in ["R1a", "R2a", "R1b", "R2b", "kb", "fb"]:
+            #     model_parameters[par].prior = dist.TruncatedNormal(
+            #         (model_parameters[par].min + model_parameters[par].max) / 2,
+            #         (model_parameters[par].max - model_parameters[par].min) / 6,
+            #         low=model_parameters[par].min,
+            #         high=model_parameters[par].max,
+            #     )
+
+    # Define probabilistic model for both Bayesian protocols
+    def probabilistic_model(model_parameters, model_args, data, method) -> None:
+        offsets, powers, B0, gamma, tp = model_args
+        fit_pars = jnp.asarray(
+            [
+                numpyro.sample(model_parameters[par].name, model_parameters[par].prior)
+                if model_parameters[par].vary
+                else model_parameters[par].value
+                for par in list(model_parameters.keys())
+            ]
+        )
+        sigma = numpyro.sample("sigma", dist.Gamma(2, 100))
+        model_pred = method(fit_pars, offsets, powers, B0, gamma, tp)
+        numpyro.sample("obs", dist.Normal(model_pred, sigma), obs=data)
+
+    init_values = {model_parameters[par].name: model_parameters[par].value for par in list(model_parameters.keys())}
+    mcmc = numpyro.infer.MCMC(
+        numpyro.infer.NUTS(probabilistic_model,
+                               dense_mass=False, target_accept_prob=0.8),
+        num_warmup=num_warmup,
+        num_samples=num_samples,
+        num_chains=num_chains,
+        chain_method="sequential",
+        progress_bar=True,
+    )
+    mcmc.run(jax.random.key(1), model_parameters, model_args, data, method)
+    return {"fit": mcmc}
+
+
+def bayesian_vi(
+    model_parameters: lmfit.Parameters,
+    model_args: tuple,
+    data: jax.Array | np.ndarray,
+    method: Callable,
+    optimizer_step_size: float | None = 1e-3,
+    num_steps: int | None = 75_000,
+    num_samples: int | None = 100_000,
+):
+    """
+    Fit data to Bloch-McConnell equations, with option to pick method of solving the equations.
+    Use a Bayesian scheme and ADVI; basically interface for numpyro.
+    Returns
+        - posterior samples in arviz `idata' format
+        - summary statistics
+    """
+    optimizer_step_size = optimizer_step_size if optimizer_step_size is not None else 1e-3
+    num_steps = num_steps if num_steps is not None else 80_000
+    num_samples = num_samples if num_samples is not None else num_samples
+
+    # set priors for model parameters if they are set to vary
+    for par in list(model_parameters.keys()):
+        if model_parameters[par].vary:
+            if par in ["dwa", "dwb"]:
+                model_parameters[par].prior = dist.Uniform(model_parameters[par].min, model_parameters[par].max)
+            elif par in ["R1a", "R2a", "R1b", "R2b", "kb", "fb"]:
+                model_parameters[par].prior = dist.TruncatedNormal(
+                    (model_parameters[par].min + model_parameters[par].max) / 2,
+                    (model_parameters[par].max - model_parameters[par].min) / 6,
+                    low=model_parameters[par].min,
+                    high=model_parameters[par].max,
+                )
+
+    # Define probabilistic model for both Bayesian protocols
+    def probabilistic_model(model_parameters, model_args, data, method) -> None:
+        offsets, powers, B0, gamma, tp = model_args
+        fit_pars = jnp.array(
+            [
+                numpyro.sample(model_parameters[par].name, model_parameters[par].prior)
+                if model_parameters[par].vary
+                else model_parameters[par].value
+                for par in list(model_parameters.keys())
+            ]
+        )
+        sigma = numpyro.sample("sigma", dist.Gamma(2, 100))
+        model_pred = method(fit_pars, offsets, powers, B0, gamma, tp)
+        numpyro.sample("obs", dist.Normal(model_pred, sigma), obs=data)
+
+    guide = numpyro.infer.autoguide.AutoMultivariateNormal(probabilistic_model)
+    optimizer = numpyro.optim.RMSProp(step_size=optimizer_step_size)
+    svi = numpyro.infer.SVI(probabilistic_model, guide, optimizer, loss=numpyro.infer.Trace_ELBO())
+    svi_result = svi.run(jax.random.key(1), num_steps, model_parameters, model_args, data, method, progress_bar=True)
+    # Get posterior samples
+    posterior_samples = guide.sample_posterior(jax.random.key(2), svi_result.params, sample_shape=(num_samples,))
+    return {"fit": posterior_samples, "loss": svi_result.losses}
