@@ -29,7 +29,7 @@ Expansion for multi-pool models and *in-vivo* semi-solid pools is possible and m
 * Choice of a fitting procedure
     * Nonlinear least squares --- [Levenberg–Marquardt algorithm](https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm)
     * Bayesian Markov chain Monte Carlo (MCMC) --- the No-U-Turn-Sampler ([NUTS](https://arxiv.org/abs/1111.4246))
-    * Bayesian variational inference --- Stochastic Variational Inference([SVI](https://arxiv.org/abs/1206.7051)), using a full-rank multivariate normal as the approximating distribution.
+    * Bayesian variational inference --- Stochastic Variational Inference ([SVI](https://arxiv.org/abs/1206.7051)), using a full-rank multivariate normal as the approximating distribution.
 
 ## Setup
 This package builds on top of [QT6](https://doc.qt.io/qtforpython-6/), [Numpyro](https://num.pyro.ai/en/latest/index.html) and [lmfit](https://lmfit.github.io/lmfit-py/).
@@ -49,11 +49,18 @@ This package builds on top of [QT6](https://doc.qt.io/qtforpython-6/), [Numpyro]
 * toml
 
 ### Installation
-1. Clone the repository to your desired directory using ``git clone https://github.com/YuvalBernard/Z-spectra-fitting-app.git``.
+1. Clone the repository to your desired directory using
+```
+git clone https://github.com/YuvalBernard/Z-spectra-fitting-app.git
+```
 2. Create a Python virtual environemnt in the local repository directory
-``python -m venv <directory>``
+```
+python -m venv <directory>
+```
 3. Within the same directory, install the required packages using
-``pip install -r requirements.txt``
+```
+pip install -r requirements.txt
+```
 
 You are ready to go!
 ## Usage
@@ -92,12 +99,12 @@ Otherwise, for each fitting variable set the minimal and maximal values and an i
         * Plot of the best-fit Z-spectra
         * Excel file containing the original dataset and the best-fit simulation
         * A text file containing summary statistics
-
+    See the `APT_phantom` folder for examples.
 We strongly encourage using the Bayesian MCMC fitting method using the Symbolic solver.
 
 ## Contributing and contact info
 This package is proprety of the [Leskes group](https://www.weizmann.ac.il/MCMS/Leskes/home) at the Weizmann Institude of Science.
 However, you may freely make changes to the software and redistribute it. Please cite our paper while doing so!
 
-We are open to suggestions for improving the software! Please contact [mailto:yuval.bernard@weizmann.ac.il].
+We are open to suggestions for improving the software! Please contact [yuval.bernard@weizmann.ac.il].
 You may also open a bug report or a feature request via Github.
