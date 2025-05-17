@@ -10,7 +10,7 @@ Python application for the fitting of Z-spectra.
 
 
 ## Intended Audience
-This package is inteded for robust fitting of multi-$B_1$ Z-spectra to Bloch--McConnell equations.
+This package is inteded for robust fitting of multi-$`B_1`$ Z-spectra to Bloch-McConnell equations.
 Inherent model assumptions:
 * Continuous wave irradiation (bloch saturation pulse)
 * (Pseudo-) first order exchange schemes
@@ -19,10 +19,10 @@ Currently the package supports only two-site models.
 Expansion for multi-pool models and *in-vivo* semi-solid pools is possible and may be implemented upon request.
 
 ## Features
-* Choice of a method for solving Bloch--McConnell equations
+* Choice of a method for solving Bloch-McConnell equations
     * Numerical solution, using matrix exponentiation
     * Analytical solution by [Zaiss and Bachert](https://analyticalsciencejournals.onlinelibrary.wiley.com/doi/10.1002/nbm.2887), using an off-resonance spin-lock approximation
-    * A revised spin-lock approximation to solving Bloch--McConnell equations that supports
+    * A revised spin-lock approximation to solving Bloch-McConnell equations that supports
         * Arbitrary identity of exchanging nuclei, given gyromagnetic ratio
         * Arbitrary fractions of equilibrium magnetizations of the exchanging pools (from symmetrical to highly assymetrical).
         * Arbitrary longitudinal relaxation rates, including rates common to paramagnetic compounds.
@@ -63,7 +63,7 @@ See `APT_phantom.xlsx` for example.
 To run the application, ensure that the virtual environment is activated, and type ``python main.py``.
 This should open the GUI.
 1. Select the data file and click next.
-2. Fill in the experimental constants: static field strength, gyromagnetic ratio, saturation duration and saturation amplitude (as a comma separated list if fitting multi-$B_1$ Z-spectra.
+2. Fill in the experimental constants: static field strength, gyromagnetic ratio, saturation duration and saturation amplitude (as a comma separated list if fitting multi-$`B_1`$ Z-spectra.
 3. Configure variables for fitting: to set a parameter as a constant, change its state from `Vary` to `Fixed`.
 Otherwise, for each fitting variable set the minimal and maximal values and an initial guess.
 4. Choose a solver:
