@@ -2,14 +2,14 @@
 Python application for the fitting of Z-spectra.
 
 ## Table of Contents
-* Who is this package for?
-* Features
-* Setup
-* Usage
-* Contributing and contact info
+* [Intended Audience](#intended-audience)
+* [Features](#features)
+* [Setup](#setup)
+* [Usage](#usage)
+* [Contributing and contact info](#contributing-and-contact-info)
 
 
-## Who is this pacakge for?
+## Intended Audience
 This package is inteded for robust fitting of multi-$B_1$ Z-spectra to Bloch--McConnell equations.
 Inherent model assumptions:
 * Continuous wave irradiation (bloch saturation pulse)
