@@ -36,7 +36,7 @@ Expansion for multi-pool models and *in-vivo* semi-solid pools is possible and m
 This package builds on top of [QT6](https://doc.qt.io/qtforpython-6/), [Numpyro](https://num.pyro.ai/en/latest/index.html) and [lmfit](https://lmfit.github.io/lmfit-py/).
 
 ### Requirements
-* Python 3.10 and above
+* Python 3.13 and above
 * arviz
 * jax
 * lmfit
@@ -51,19 +51,36 @@ This package builds on top of [QT6](https://doc.qt.io/qtforpython-6/), [Numpyro]
 
 ### Installation
 1. Clone the repository to your desired directory using
-```
-git clone https://github.com/YuvalBernard/Z-spectra-fitting-app.git
-```
-2. Create a Python virtual environemnt in the local repository directory
-```
-python -m venv <directory>
-```
-3. Within the same directory, install the required packages using
-```
-pip install -r requirements.txt
-```
+    ```
+    git clone https://github.com/YuvalBernard/Z-spectra-fitting-app.git
+    ```
+    Alternatively, download the repository as a .zip file by clicking the green "<> Code" button on the right corner and click "Download ZIP".
 
-You are ready to go!
+2. Install the required dependencies into a virtual environment.
+
+    * If using a terminal, We recommend using the python project manager [uv](https://docs.astral.sh/uv/) for quick installation of the required dependencies.
+        * To install uv on macOS and Linux open the terminal and type
+            ```
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            ```
+        * To install uv on Windows open powershell and type
+            ```
+            powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+            ```
+        After installing uv, open a terminal within the working directory (where this repository was cloned) and type
+        ```
+        uv sync
+        ```
+
+    * If using an IDE like VSCode, install the dependencies via the `requirements.txt` file.
+### Running the Program
+To execute the program, run the `main.py` file after initializing the python virtual environment with the installed dependencies.
+
+If using uv, to initialize the environemt and execute the program in a single step, simply open a terminal in the working directory and type
+```
+uv run main.py
+```
+The program should then start.
 ## Usage
 Data for fitting is expected in a .xlsx format.
 See `APT_phantom.xlsx` for example.
